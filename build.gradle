@@ -1,0 +1,41 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'com.example'
+version = '1.0.0'
+sourceCompatibility = '11'
+
+repositories {
+    mavenCentral()
+    maven {
+        url 'https://jitpack.io'
+    }
+}
+
+dependencies {
+    // WLDT Core dependency
+    implementation 'io.github.wldt:wldt-core:0.4.0'
+    implementation 'io.github.wldt:mqtt-physical-adapter:0.1.2'
+    
+    // Logging
+    implementation 'ch.qos.logback:logback-classic:1.4.14'
+    implementation 'org.slf4j:slf4j-api:2.0.9'
+    
+    // Testing
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.1'
+}
+
+application {
+    mainClass = 'io.github.wldt.demo.DemoDigitalTwin.Main'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}

@@ -1,0 +1,32 @@
+# Ignora file di build
+build/
+.gradle/
+gradle-app.setting
+
+# Ignora directory dei log
+logs/
+
+# Ignora file dell'IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
+
+# Ignora file di sistema
+.DS_Store
+Thumbs.db
+
+# Ignora file temporanei
+*.tmp
+*.temp
+*.log
+*.swp
+*.swo
+
+# Ignora file di output
+out/
+target/
