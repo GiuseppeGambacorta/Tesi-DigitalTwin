@@ -8,7 +8,7 @@ import java.util.function.Function;
 
 import com.google.gson.Gson;
 
-import io.github.wldt.demo.DemoDigitalTwin.ButtonStatusDescriptor;
+import io.github.wldt.demo.DemoDigitalTwin.MachineForMesDescriptor;
 import io.github.wldt.demo.digital.DemoConfDigitalAdapter;
 import io.github.wldt.demo.digital.DemoDigitalAdapterConfiguration;
 import io.github.wldt.demo.logger.DemoEventLogger;
@@ -39,16 +39,12 @@ import it.wldt.exception.EventBusException;
 public class DemoDigitalTwin {
 
 
-    public static class ButtonStatusDescriptor {
-        private String IsActive;
-        private String IsDisabled;
-        private String IsForced;
+    public static class MachineForMesDescriptor {
+  
         private String Value;
         
         // Getters
-        public boolean getIsActive() { return "1".equals(IsActive); }
-        public boolean getIsDisabled() { return "1".equals(IsDisabled); }
-        public boolean getIsForced() { return "1".equals(IsForced); }
+
         public String getValue() { return Value; }
     
     }
@@ -56,7 +52,7 @@ public class DemoDigitalTwin {
 
     private static MqttSubscribeFunction getButtonStateFunction(String topic){
         return msgPayload -> {
-            ButtonStatusDescriptor buttonStatus = new Gson().fromJson(msgPayload, ButtonStatusDescriptor.class);
+            MachineForMesDescriptor buttonStatus = new Gson().fromJson(msgPayload, MachineForMesDescriptor.class);
             List<WldtEvent<?>> events = new ArrayList<>();
             try {
                 events.add(new PhysicalAssetPropertyWldtEvent<>(topic+"/Value", buttonStatus.getValue()));
