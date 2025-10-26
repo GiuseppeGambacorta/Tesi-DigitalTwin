@@ -43,11 +43,13 @@ public class DemoDigitalTwin {
         private String IsActive;
         private String IsDisabled;
         private String IsForced;
+        private String Value;
         
         // Getters
         public boolean getIsActive() { return "1".equals(IsActive); }
         public boolean getIsDisabled() { return "1".equals(IsDisabled); }
         public boolean getIsForced() { return "1".equals(IsForced); }
+        public String getValue() { return Value; }
     
     }
 
@@ -57,9 +59,7 @@ public class DemoDigitalTwin {
             ButtonStatusDescriptor buttonStatus = new Gson().fromJson(msgPayload, ButtonStatusDescriptor.class);
             List<WldtEvent<?>> events = new ArrayList<>();
             try {
-                events.add(new PhysicalAssetPropertyWldtEvent<>(topic+"/IsActive", buttonStatus.getIsActive()));
-                events.add(new PhysicalAssetPropertyWldtEvent<>(topic+"/IsDisabled", buttonStatus.getIsDisabled()));
-                events.add(new PhysicalAssetPropertyWldtEvent<>(topic+"/IsForced", buttonStatus.getIsForced()));
+                events.add(new PhysicalAssetPropertyWldtEvent<>(topic+"/Value", buttonStatus.getValue()));
             } catch (EventBusException e) {
                 e.printStackTrace();
             }
@@ -71,23 +71,8 @@ public class DemoDigitalTwin {
         private static List<PhysicalAssetProperty<?>> createButtonProperties(String topic) {
             List<PhysicalAssetProperty<?>> properties = new ArrayList<>();
             
-            properties.add(new PhysicalAssetProperty<>(topic+"/IsActive", false));
-            properties.add(new PhysicalAssetProperty<>(topic+"/IsDisabled", false));
-            properties.add(new PhysicalAssetProperty<>(topic+"/IsForced", false));
-            
+            properties.add(new PhysicalAssetProperty<>(topic+"/Value", ""));
             return properties;
-        }
-
-        // Lista degli eventi del pulsante (opzionale)
-        private static List<PhysicalAssetEvent> createButtonEvents() {
-            List<PhysicalAssetEvent> events = new ArrayList<>();
-            
-            // Eventi che il pulsante può generare
-            events.add(new PhysicalAssetEvent("button_pressed", "text/plain"));
-            events.add(new PhysicalAssetEvent("button_released", "text/plain"));
-            events.add(new PhysicalAssetEvent("button_forced", "text/plain"));
-            
-            return events;
         }
 
     public static void main(String[] args)  {
@@ -99,7 +84,7 @@ public class DemoDigitalTwin {
                     new DemoShadowingFunction("test-shadowing-function")
             );
 
-            String tempTopic = "PickAndPlace/MainMachine/Objects/ResetButton";
+            String tempTopic = "PickAndPlace/MainMachine/MachineMode";
 
             MqttPhysicalAdapterConfiguration config = MqttPhysicalAdapterConfiguration.builder("127.0.0.1", 1883)
             //.addPhysicalAssetPropertyAndTopic("ResetButton Pressed", 0, "Palletizer/MainMachine/Objects/ResetButton/IsActive", Integer::parseInt)
