@@ -194,7 +194,7 @@ public class DemoShadowingFunction extends ShadowingFunction {
 
         try {
 
-            System.out.println("[TestShadowingFunction] -> onPhysicalAssetPropertyVariation() -> Variation on Property :" + physicalAssetPropertyWldtEvent.getPhysicalPropertyId());
+            System.out.println("[TestShadowingFunction]ciaooooo -> onPhysicalAssetPropertyVariation() -> Variation on Property :" + physicalAssetPropertyWldtEvent.getPhysicalPropertyId());
 
             //Update Digital Twin State
             //NEW from 0.3.0 -> Start State Transaction
