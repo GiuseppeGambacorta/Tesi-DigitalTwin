@@ -60,7 +60,7 @@ public class DemoShadowingFunction extends ShadowingFunction {
                     try {
 
                         //Create and write the property on the DT's State
-                        this.digitalTwinStateManager.createProperty(new DigitalTwinStateProperty<>(property.getKey(),(Double) property.getInitialValue()));
+                        this.digitalTwinStateManager.createProperty(new DigitalTwinStateProperty<>(property.getKey(),(Boolean) property.getInitialValue()));
 
                         //Start observing the variation of the physical property in order to receive notifications
                         //Without this call the Shadowing Function will not receive any notifications or callback about

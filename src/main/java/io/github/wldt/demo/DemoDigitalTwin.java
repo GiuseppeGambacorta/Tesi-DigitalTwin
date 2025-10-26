@@ -1,8 +1,14 @@
 package io.github.wldt.demo;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
+import com.google.gson.Gson;
+
+import io.github.wldt.demo.DemoDigitalTwin.ButtonStatusDescriptor;
 import io.github.wldt.demo.digital.DemoConfDigitalAdapter;
 import io.github.wldt.demo.digital.DemoDigitalAdapterConfiguration;
 import io.github.wldt.demo.logger.DemoEventLogger;
@@ -11,9 +17,19 @@ import io.github.wldt.demo.physical.DemoPhysicalAdapterConfiguration;
 import it.wldt.adapter.mqtt.physical.MqttPhysicalAdapter;
 import it.wldt.adapter.mqtt.physical.MqttPhysicalAdapterConfiguration;
 import it.wldt.adapter.mqtt.physical.topic.incoming.DigitalTwinIncomingTopic;
+import it.wldt.adapter.mqtt.physical.topic.incoming.MqttSubscribeFunction;
+import it.wldt.adapter.physical.PhysicalAssetEvent;
+import it.wldt.adapter.physical.PhysicalAssetProperty;
+import it.wldt.adapter.physical.event.PhysicalAssetPropertyWldtEvent;
 import it.wldt.core.engine.DigitalTwin;
 import it.wldt.core.engine.DigitalTwinEngine;
+import it.wldt.core.event.WldtEvent;
 import it.wldt.core.event.WldtEventBus;
+import it.wldt.exception.EventBusException;
+
+
+
+
 
 /**
  * Main class to build and test a demo Digital Twin with the created physical and digital adapters
@@ -21,6 +37,58 @@ import it.wldt.core.event.WldtEventBus;
  * @author Marco Picone, Ph.D. (picone.m@gmail.com)
  */
 public class DemoDigitalTwin {
+
+
+    public static class ButtonStatusDescriptor {
+        private String IsActive;
+        private String IsDisabled;
+        private String IsForced;
+        
+        // Getters
+        public boolean getIsActive() { return "1".equals(IsActive); }
+        public boolean getIsDisabled() { return "1".equals(IsDisabled); }
+        public boolean getIsForced() { return "1".equals(IsForced); }
+    
+    }
+
+
+    private static MqttSubscribeFunction getButtonStateFunction(String topic){
+        return msgPayload -> {
+            ButtonStatusDescriptor buttonStatus = new Gson().fromJson(msgPayload, ButtonStatusDescriptor.class);
+            List<WldtEvent<?>> events = new ArrayList<>();
+            try {
+                events.add(new PhysicalAssetPropertyWldtEvent<>(topic+"/IsActive", buttonStatus.getIsActive()));
+                events.add(new PhysicalAssetPropertyWldtEvent<>(topic+"/IsDisabled", buttonStatus.getIsDisabled()));
+                events.add(new PhysicalAssetPropertyWldtEvent<>(topic+"/IsForced", buttonStatus.getIsForced()));
+            } catch (EventBusException e) {
+                e.printStackTrace();
+            }
+            return events;
+        };
+    }
+
+        // Lista delle proprietà del pulsante
+        private static List<PhysicalAssetProperty<?>> createButtonProperties(String topic) {
+            List<PhysicalAssetProperty<?>> properties = new ArrayList<>();
+            
+            properties.add(new PhysicalAssetProperty<>(topic+"/IsActive", false));
+            properties.add(new PhysicalAssetProperty<>(topic+"/IsDisabled", false));
+            properties.add(new PhysicalAssetProperty<>(topic+"/IsForced", false));
+            
+            return properties;
+        }
+
+        // Lista degli eventi del pulsante (opzionale)
+        private static List<PhysicalAssetEvent> createButtonEvents() {
+            List<PhysicalAssetEvent> events = new ArrayList<>();
+            
+            // Eventi che il pulsante può generare
+            events.add(new PhysicalAssetEvent("button_pressed", "text/plain"));
+            events.add(new PhysicalAssetEvent("button_released", "text/plain"));
+            events.add(new PhysicalAssetEvent("button_forced", "text/plain"));
+            
+            return events;
+        }
 
     public static void main(String[] args)  {
         try{
@@ -31,15 +99,29 @@ public class DemoDigitalTwin {
                     new DemoShadowingFunction("test-shadowing-function")
             );
 
-            
+            String tempTopic = "PickAndPlace/MainMachine/Objects/ResetButton";
 
             MqttPhysicalAdapterConfiguration config = MqttPhysicalAdapterConfiguration.builder("127.0.0.1", 1883)
-            .addPhysicalAssetPropertyAndTopic("intensity", 0, "Palletizzatore/MainMachine/Conteggio", Integer::parseInt)
-           // .addIncomingTopic(new DigitalTwinIncomingTopic("sensor/state", getSensorStateFunction()), createIncomingTopicRelatedPropertyList(), new ArrayList<>())
-           // .addPhysicalAssetEventAndTopic("overheating", "text/plain", "sensor/overheating", Function.identity())
-           // .addPhysicalAssetActionAndTopic("switch-off", "sensor.actuation", "text/plain", "sensor/actions/switch", actionBody -> "switch" + actionBody)
+            //.addPhysicalAssetPropertyAndTopic("ResetButton Pressed", 0, "Palletizer/MainMachine/Objects/ResetButton/IsActive", Integer::parseInt)
+            //.addPhysicalAssetEventAndTopic("EmergencyButton Pressed", "text/plain", "Palletizer/MainMachine/Objects/EmergencyButton/IsActive", Function.identity())
+            //.addPhysicalAssetActionAndTopic("switch-off", "sensor.actuation", "text/plain", "sensor/actions/switch", actionBody -> "switch" + actionBody)
+            //.addIncomingTopic(new DigitalTwinIncomingTopic("sensor/state", getSensorStateFunction()), createIncomingTopicRelatedPropertyList(), new ArrayList<>())
+
+         
+            .addIncomingTopic(
+                new DigitalTwinIncomingTopic(tempTopic, getButtonStateFunction(tempTopic)), createButtonProperties(tempTopic), new ArrayList<>()
+            )
+          
             .build();
 
+            /* 
+            MqttPhysicalAdapterConfiguration config = MqttPhysicalAdapterConfiguration.builder("127.0.0.1", 1883)
+                .addPhysicalAssetPropertyAndTopic("intensity", 0, "sensor/intensity", Integer::parseInt)
+                .addIncomingTopic(new DigitalTwinIncomingTopic("sensor/state", getSensorStateFunction()), createIncomingTopicRelatedPropertyList(), new ArrayList<>())
+                .addPhysicalAssetEventAndTopic("overheating", "text/plain", "sensor/overheating", Function.identity())
+                .addPhysicalAssetActionAndTopic("switch-off", "sensor.actuation", "text/plain", "sensor/actions/switch", actionBody -> "switch" + actionBody)
+                .build();
+            */
             MqttPhysicalAdapter mqttPhysicalAdapter = new MqttPhysicalAdapter("test-mqtt-pa", config);
             digitalTwin.addPhysicalAdapter(mqttPhysicalAdapter);
 
@@ -49,7 +131,7 @@ public class DemoDigitalTwin {
 
             //Physical and Digital Adapters with Configuration
             //digitalTwin.addPhysicalAdapter(new DemoConfPhysicalAdapter("test-physical-adapter", new DemoPhysicalAdapterConfiguration()));
-            //digitalTwin.addDigitalAdapter(new DemoConfDigitalAdapter("test-digital-adapter", new DemoDigitalAdapterConfiguration()));
+            digitalTwin.addDigitalAdapter(new DemoConfDigitalAdapter("test-digital-adapter", new DemoDigitalAdapterConfiguration()));
 
             // Create the Digital Twin Engine
             DigitalTwinEngine digitalTwinEngine = new DigitalTwinEngine();
