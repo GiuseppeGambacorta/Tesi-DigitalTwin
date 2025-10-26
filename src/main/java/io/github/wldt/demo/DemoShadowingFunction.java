@@ -12,6 +12,7 @@ import it.wldt.core.model.ShadowingFunction;
 import it.wldt.core.state.*;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Authors:
@@ -48,6 +49,10 @@ public class DemoShadowingFunction extends ShadowingFunction {
     protected void onDigitalTwinBound(Map<String, PhysicalAssetDescription> adaptersPhysicalAssetDescriptionMap) {
 
         try{
+
+
+            
+
 
             System.out.println("[TestShadowingFunction] -> onDigitalTwinBound(): " + adaptersPhysicalAssetDescriptionMap);
 
@@ -194,20 +199,37 @@ public class DemoShadowingFunction extends ShadowingFunction {
 
         try {
 
-            System.out.println("[TestShadowingFunction]ciaooooo -> onPhysicalAssetPropertyVariation() -> Variation on Property :" + physicalAssetPropertyWldtEvent.getPhysicalPropertyId());
+            DigitalTwinStateProperty<?> newProperty = new DigitalTwinStateProperty<>(physicalAssetPropertyWldtEvent.getPhysicalPropertyId(),
+                                                                                     physicalAssetPropertyWldtEvent.getBody());
+
+            if (Objects.equals(newProperty.getKey(), "PickAndPlace/MainMachine/ConteggioCicli/Value")) {
+                System.out.println("provaaaaaaaa:" + physicalAssetPropertyWldtEvent.getPhysicalPropertyId() + " New Value: " + physicalAssetPropertyWldtEvent.getBody());
+                Integer ConteggioCicli = Integer.parseInt((String) physicalAssetPropertyWldtEvent.getBody());
+                if (ConteggioCicli % 10 == 0) {
+                    System.out.println("***** [DemoShadowingFunction] - ConteggioCicli reachedmultiple of 10: " + ConteggioCicli + " *****");
+                    ConteggioCicli += 1;
+                }
+
+                this.digitalTwinStateManager.startStateTransaction();
+                this.digitalTwinStateManager.updateProperty(new DigitalTwinStateProperty<>("PickAndPlace/MainMachine/ConteggioCicli/Value", (String.valueOf(ConteggioCicli))));
+                this.digitalTwinStateManager.commitStateTransaction();
+            }
+
+                
+            //System.out.println("[TestShadowingFunction]-> onPhysicalAssetPropertyVariation() -> Variation on Property :" + physicalAssetPropertyWldtEvent.getPhysicalPropertyId());
 
             //Update Digital Twin State
             //NEW from 0.3.0 -> Start State Transaction
-            this.digitalTwinStateManager.startStateTransaction();
+           
 
-            this.digitalTwinStateManager.updateProperty(new DigitalTwinStateProperty<>(
-                    physicalAssetPropertyWldtEvent.getPhysicalPropertyId(),
-                    physicalAssetPropertyWldtEvent.getBody()));
+           // this.digitalTwinStateManager.updateProperty(new DigitalTwinStateProperty<>(
+           //         physicalAssetPropertyWldtEvent.getPhysicalPropertyId(),
+           //         physicalAssetPropertyWldtEvent.getBody()));
 
             //NEW from 0.3.0 -> Commit State Transaction
-            this.digitalTwinStateManager.commitStateTransaction();
+          
 
-            System.out.println("[TestShadowingFunction] -> onPhysicalAssetPropertyVariation() -> DT State UPDATE Property :" + physicalAssetPropertyWldtEvent.getPhysicalPropertyId());
+            //System.out.println("[TestShadowingFunction] -> onPhysicalAssetPropertyVariation() -> DT State UPDATE Property :" + physicalAssetPropertyWldtEvent.getPhysicalPropertyId());
 
         } catch (Exception e) {
             e.printStackTrace();

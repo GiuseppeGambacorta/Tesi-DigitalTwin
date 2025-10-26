@@ -69,8 +69,8 @@ public class DemoDigitalTwin {
         try{
 
             // Create the new Digital Twin
-            DigitalTwin digitalTwin = new DigitalTwin(
-                    "mqtt-digital-twin",
+            DigitalTwin machineForMesTwin = new DigitalTwin(
+                    "machineforMesTwin",
                     new DemoShadowingFunction("test-shadowing-function")
             );
 
@@ -90,7 +90,7 @@ public class DemoDigitalTwin {
 
           
             MqttPhysicalAdapter mqttPhysicalAdapter = new MqttPhysicalAdapter("test-mqtt-pa", config);
-            digitalTwin.addPhysicalAdapter(mqttPhysicalAdapter);
+            machineForMesTwin.addPhysicalAdapter(mqttPhysicalAdapter);
 
             //Default Physical and Digital Adapter
             //digitalTwin.addPhysicalAdapter(new DemoPhysicalAdapter("test-physical-adapter"));
@@ -98,13 +98,13 @@ public class DemoDigitalTwin {
 
             //Physical and Digital Adapters with Configuration
             //digitalTwin.addPhysicalAdapter(new DemoConfPhysicalAdapter("test-physical-adapter", new DemoPhysicalAdapterConfiguration()));
-            digitalTwin.addDigitalAdapter(new DemoConfDigitalAdapter("test-digital-adapter", new DemoDigitalAdapterConfiguration()));
+            machineForMesTwin.addDigitalAdapter(new DemoConfDigitalAdapter("test-digital-adapter", new DemoDigitalAdapterConfiguration()));
 
             // Create the Digital Twin Engine
             DigitalTwinEngine digitalTwinEngine = new DigitalTwinEngine();
 
             // Add the Digital Twin to the Engine
-            digitalTwinEngine.addDigitalTwin(digitalTwin);
+            digitalTwinEngine.addDigitalTwin(machineForMesTwin);
 
             // Set a new Event-Logger to a Custom One that we created with the class 'DemoEventLogger'
             WldtEventBus.getInstance().setEventLogger(new DemoEventLogger());
