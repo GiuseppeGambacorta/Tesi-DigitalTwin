@@ -8,7 +8,7 @@ import java.util.function.Function;
 
 import com.google.gson.Gson;
 
-import io.github.wldt.demo.DemoDigitalTwin.MachineForMesDescriptor;
+import io.github.wldt.demo.DemoDigitalTwin.SingleValueDescriptor;
 import io.github.wldt.demo.digital.DemoConfDigitalAdapter;
 import io.github.wldt.demo.digital.DemoDigitalAdapterConfiguration;
 import io.github.wldt.demo.logger.DemoEventLogger;
@@ -39,20 +39,15 @@ import it.wldt.exception.EventBusException;
 public class DemoDigitalTwin {
 
 
-    public static class MachineForMesDescriptor {
-  
+    public static class SingleValueDescriptor {
         private String Value;
-        
-        // Getters
-
         public String getValue() { return Value; }
-    
     }
 
 
-    private static MqttSubscribeFunction getButtonStateFunction(String topic){
+    private static MqttSubscribeFunction MapSingleValue(String topic){
         return msgPayload -> {
-            MachineForMesDescriptor buttonStatus = new Gson().fromJson(msgPayload, MachineForMesDescriptor.class);
+            SingleValueDescriptor buttonStatus = new Gson().fromJson(msgPayload, SingleValueDescriptor.class);
             List<WldtEvent<?>> events = new ArrayList<>();
             try {
                 events.add(new PhysicalAssetPropertyWldtEvent<>(topic+"/Value", buttonStatus.getValue()));
@@ -63,8 +58,7 @@ public class DemoDigitalTwin {
         };
     }
 
-        // Lista delle proprietà del pulsante
-        private static List<PhysicalAssetProperty<?>> createButtonProperties(String topic) {
+    private static List<PhysicalAssetProperty<?>> CreateSingleValueProperties(String topic) {
             List<PhysicalAssetProperty<?>> properties = new ArrayList<>();
             
             properties.add(new PhysicalAssetProperty<>(topic+"/Value", ""));
@@ -80,29 +74,21 @@ public class DemoDigitalTwin {
                     new DemoShadowingFunction("test-shadowing-function")
             );
 
-            String tempTopic = "PickAndPlace/MainMachine/MachineMode";
+            String tempTopic = "PickAndPlace/MainMachine/";
 
             MqttPhysicalAdapterConfiguration config = MqttPhysicalAdapterConfiguration.builder("127.0.0.1", 1883)
-            //.addPhysicalAssetPropertyAndTopic("ResetButton Pressed", 0, "Palletizer/MainMachine/Objects/ResetButton/IsActive", Integer::parseInt)
-            //.addPhysicalAssetEventAndTopic("EmergencyButton Pressed", "text/plain", "Palletizer/MainMachine/Objects/EmergencyButton/IsActive", Function.identity())
-            //.addPhysicalAssetActionAndTopic("switch-off", "sensor.actuation", "text/plain", "sensor/actions/switch", actionBody -> "switch" + actionBody)
-            //.addIncomingTopic(new DigitalTwinIncomingTopic("sensor/state", getSensorStateFunction()), createIncomingTopicRelatedPropertyList(), new ArrayList<>())
-
+         
          
             .addIncomingTopic(
-                new DigitalTwinIncomingTopic(tempTopic, getButtonStateFunction(tempTopic)), createButtonProperties(tempTopic), new ArrayList<>()
+                new DigitalTwinIncomingTopic(tempTopic + "MachineMode", MapSingleValue(tempTopic + "MachineMode")), CreateSingleValueProperties(tempTopic + "MachineMode"), new ArrayList<>()
+            )
+            .addIncomingTopic(
+                new DigitalTwinIncomingTopic(tempTopic + "ConteggioCicli", MapSingleValue(tempTopic + "ConteggioCicli")), CreateSingleValueProperties(tempTopic + "ConteggioCicli"), new ArrayList<>()
             )
           
             .build();
 
-            /* 
-            MqttPhysicalAdapterConfiguration config = MqttPhysicalAdapterConfiguration.builder("127.0.0.1", 1883)
-                .addPhysicalAssetPropertyAndTopic("intensity", 0, "sensor/intensity", Integer::parseInt)
-                .addIncomingTopic(new DigitalTwinIncomingTopic("sensor/state", getSensorStateFunction()), createIncomingTopicRelatedPropertyList(), new ArrayList<>())
-                .addPhysicalAssetEventAndTopic("overheating", "text/plain", "sensor/overheating", Function.identity())
-                .addPhysicalAssetActionAndTopic("switch-off", "sensor.actuation", "text/plain", "sensor/actions/switch", actionBody -> "switch" + actionBody)
-                .build();
-            */
+          
             MqttPhysicalAdapter mqttPhysicalAdapter = new MqttPhysicalAdapter("test-mqtt-pa", config);
             digitalTwin.addPhysicalAdapter(mqttPhysicalAdapter);
 
