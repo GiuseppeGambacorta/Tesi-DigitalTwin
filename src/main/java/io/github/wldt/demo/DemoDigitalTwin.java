@@ -16,8 +16,11 @@ import io.github.wldt.demo.physical.DemoConfPhysicalAdapter;
 import io.github.wldt.demo.physical.DemoPhysicalAdapterConfiguration;
 import it.wldt.adapter.mqtt.physical.MqttPhysicalAdapter;
 import it.wldt.adapter.mqtt.physical.MqttPhysicalAdapterConfiguration;
+import it.wldt.adapter.mqtt.physical.MqttPhysicalAdapterConfigurationBuilder;
+import it.wldt.adapter.mqtt.physical.exception.MqttPhysicalAdapterConfigurationException;
 import it.wldt.adapter.mqtt.physical.topic.incoming.DigitalTwinIncomingTopic;
 import it.wldt.adapter.mqtt.physical.topic.incoming.MqttSubscribeFunction;
+import it.wldt.adapter.mqtt.physical.topic.outgoing.DigitalTwinOutgoingTopic;
 import it.wldt.adapter.physical.PhysicalAssetEvent;
 import it.wldt.adapter.physical.PhysicalAssetProperty;
 import it.wldt.adapter.physical.event.PhysicalAssetPropertyWldtEvent;
@@ -85,6 +88,24 @@ public class DemoDigitalTwin {
             .addIncomingTopic(
                 new DigitalTwinIncomingTopic(tempTopic + "ConteggioCicli", MapSingleValue(tempTopic + "ConteggioCicli")), CreateSingleValueProperties(tempTopic + "ConteggioCicli"), new ArrayList<>()
             )
+
+             .addPhysicalAssetActionAndTopic("start", "Boolean", "text/plain", tempTopic + "StartFromDigitalTwin",
+                value -> {
+                    if (value == null) return "";
+                    if (value instanceof SingleValueDescriptor) return ((SingleValueDescriptor) value).getValue();
+                    return value.toString();
+                }
+            )
+
+
+            .addPhysicalAssetActionAndTopic("stop", "Boolean", "text/plain", tempTopic + "StopFromDigitalTwin",
+                value -> {
+                    if (value == null) return "";
+                    if (value instanceof SingleValueDescriptor) return ((SingleValueDescriptor) value).getValue();
+                    return value.toString();
+                }
+            )
+          
           
             .build();
 

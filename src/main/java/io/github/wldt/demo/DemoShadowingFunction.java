@@ -208,6 +208,7 @@ public class DemoShadowingFunction extends ShadowingFunction {
                 if (ConteggioCicli % 10 == 0) {
                     System.out.println("***** [DemoShadowingFunction] - ConteggioCicli reachedmultiple of 10: " + ConteggioCicli + " *****");
                     ConteggioCicli += 1;
+                    this.publishPhysicalAssetActionWldtEvent("stop", "{Value : True}");
                 }
 
                 this.digitalTwinStateManager.startStateTransaction();
